@@ -8,12 +8,19 @@ class Table extends React.Component {
     loading: false,
     error: null
   };
-  columns = [];
+
+  constructor(props) {
+    super(props);
+    this.columns = props.columns;
+  }
 
   async loadData(searchParams = undefined) {
     if (!this.props.service) return;
     try {
       let data = await this.props.service(searchParams);
+      if (this.props.responseFilter) {
+        data = this.props.responseFilter(data);
+      }
       this.setState({ data, loading: false, error: null });
     } catch (error) {
       this.setState({ error, loading: false });
@@ -39,8 +46,8 @@ class Table extends React.Component {
       <table className={this.props.className || ""}>
         <thead>
           <tr>
-            {this.columns.map(column => {
-              return <th>{column.title || ""}</th>;
+            {this.columns.map((column, index) => {
+              return <th key={index}>{column.title || ""}</th>;
             })}
           </tr>
         </thead>
