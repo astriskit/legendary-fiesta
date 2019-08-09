@@ -57,7 +57,13 @@ export function ListStudents(props) {
     { title: "Age", key: "age", dataIndex: "age" },
     { title: "Email", key: "email", dataIndex: "email" }
   ];
-  return <Table service={getStudents} columns={columns} />;
+  return (
+    <Table
+      service={getStudents}
+      columns={columns}
+      responseFilter={data => data.students}
+    />
+  );
 }
 export function ViewStudent(props) {
   return null;
