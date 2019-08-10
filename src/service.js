@@ -55,10 +55,10 @@ export function getStudent(id) {
  * student - registration
  */
 export function getRegistrations() {
-  return baseFetch("registrations");
+  return baseFetch("registration");
 }
 export function getRegistration(id) {
-  return baseFetch(`registrations/${id}`);
+  return baseFetch(`registration/${id}`);
 }
 export function addRegistration(studentId, subjectId) {
   return baseFetch("registration", {
