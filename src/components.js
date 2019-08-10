@@ -69,7 +69,28 @@ export function ViewStudent(props) {
   return null;
 }
 export function ListClassRooms(props) {
-  return null;
+  // {
+  //   "id": 1,
+  //   "layout": "conference",
+  //   "name": "NavajoWhite",
+  //   "size": 24,
+  //   "subject": ""
+  // }
+
+  const columns = [
+    { title: "Id", key: "id", dataIndex: "id" },
+    { title: "Name", key: "name", dataIndex: "name" },
+    { title: "Layout", key: "layout", dataIndex: "layout" },
+    { title: "Size", key: "size", dataIndex: "size" },
+    { title: "Subject", key: "subject", dataIndex: "subject" }
+  ];
+  return (
+    <Table
+      service={getClassRooms}
+      columns={columns}
+      responseFilter={data => data.classrooms}
+    />
+  );
 }
 export function ViewClassRoom(props) {
   return null;
@@ -78,7 +99,38 @@ export function UpdateClassRoom(props) {
   return null;
 }
 export function ListRegistrations(props) {
-  return null;
+  //   {
+  //   "registration": {
+  //     "id": 4,
+  //     "student": 5,
+  //     "subject": 3
+  //   }
+  // }
+  const columns = [
+    { title: "Id", key: "id", dataIndex: "id" },
+    { title: "Student Id", key: "student", dataIndex: "student" },
+    { title: "Subject Id", key: "subject", dataIndex: "subject" },
+    {
+      title: "Delete",
+      key: "delete",
+      render: rec => (
+        <button
+          onClick={() => {
+            console.info("delete registration api-missing");
+          }}
+        >
+          Delete
+        </button>
+      )
+    }
+  ];
+  return (
+    <Table
+      service={getRegistrations}
+      columns={columns}
+      responseFilter={data => data.registrations}
+    />
+  );
 }
 export function ViewRegistration(props) {
   return null;
@@ -90,7 +142,25 @@ export function DeleteRegistration(props) {
   return null;
 }
 export function ListSubjects(props) {
-  return null;
+  //   {
+  //   "credits": 10,
+  //   "id": 1,
+  //   "name": "History",
+  //   "teacher": "Brenda Miller"
+  // }
+  const columns = [
+    { title: "Id", key: "id", dataIndex: "id" },
+    { title: "Name", key: "name", dataIndex: "name" },
+    { title: "Credits", key: "credits", dataIndex: "credits" },
+    { title: "Teacher", key: "teacher", dataIndex: "teacher" }
+  ];
+  return (
+    <Table
+      service={getSubjects}
+      columns={columns}
+      responseFilter={data => data.subjects}
+    />
+  );
 }
 export function ViewSubject(props) {
   return null;
