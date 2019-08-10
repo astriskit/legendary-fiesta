@@ -14,17 +14,19 @@ class Table extends React.Component {
     this.columns = props.columns;
   }
 
-  async loadData(searchParams = undefined) {
+  loadData(searchParams = undefined) {
     if (!this.props.service) return;
-    try {
-      let data = await this.props.service(searchParams);
-      if (this.props.responseFilter) {
-        data = this.props.responseFilter(data);
+    this.setState({ loading: true }, async () => {
+      try {
+        let data = await this.props.service(searchParams);
+        if (this.props.responseFilter) {
+          data = this.props.responseFilter(data);
+        }
+        this.setState({ data, loading: false, error: null });
+      } catch (error) {
+        this.setState({ error, loading: false });
       }
-      this.setState({ data, loading: false, error: null });
-    } catch (error) {
-      this.setState({ error, loading: false });
-    }
+    });
   }
 
   componentDidMount() {
@@ -41,6 +43,9 @@ class Table extends React.Component {
     }
     if (this.state.error) {
       return <Error error={this.state.error} />;
+    }
+    if (!this.state.data.length) {
+      return <div>No data</div>;
     }
     return (
       <table className={this.props.className || ""}>
