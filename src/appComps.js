@@ -67,45 +67,57 @@ export function ListStudents(props) {
 }
 
 const SubjectSelect = ({
-  record: rec,
+  record: { id },
   setClassrooms,
   classrooms,
   subjects
 }) => {
   let selectRef = useRef(null);
-  let [saving, setSaving] = useState(false);
+  let [loading, setLoading] = useState(true);
+  let [rec, setRec] = useState({});
   useEffect(() => {
-    selectRef.current.value = rec.value || null;
+    (async () => {
+      try {
+        let classroom = await getClassRoom(id);
+        setRec(classroom);
+      } catch (e) {
+        alert("Error fetching classroom info");
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  });
+  useEffect(() => {
+    selectRef.current.value = rec.subject || null;
   }, [rec]);
+  if (loading) return <Loading />;
   return (
-    <>
-      {saving && <Loading />}
-      <Select
-        ref={selectRef}
-        disabled={saving}
-        value={rec.value}
-        options={subjects}
-        onChange={async ({ target: { value } }) => {
-          try {
-            setSaving(true);
-            await updateClassRoom(rec.id, { subject: value });
-            let newRecords = classrooms.map(classroom => {
-              if (rec.id === classroom.id) {
-                classroom.value = value;
-              }
-              return classroom;
-            });
-            setClassrooms(newRecords);
-          } catch (er) {
-            selectRef.current.value = rec.value;
-            console.error(er);
-            alert("Error while saving!");
-          } finally {
-            setSaving(false);
-          }
-        }}
-      />
-    </>
+    <Select
+      ref={selectRef}
+      value={rec.value}
+      disabled={loading}
+      options={subjects}
+      onChange={async ({ target: { value } }) => {
+        try {
+          setLoading(true);
+          await updateClassRoom(rec.id, { subject: value });
+          let newRecords = classrooms.map(classroom => {
+            if (rec.id === classroom.id) {
+              classroom.value = value;
+            }
+            return classroom;
+          });
+          setClassrooms(newRecords);
+        } catch (er) {
+          selectRef.current.value = rec.value;
+          console.error(er);
+          alert("Error while saving!");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    />
   );
 };
 
@@ -202,10 +214,32 @@ export function ListRegistrations(props) {
   );
 }
 export function CreateRegistration(props) {
-  const options = [1, 3, 4, 5, 66, 36].map(n => ({
-    key: n,
-    value: n,
-    title: n
+  let [loading, setLoading] = useState(true);
+  let [{ students = [], subjects = [] }, setStore] = useState({});
+  useEffect(() => {
+    (async () => {
+      try {
+        let { subjects = [] } = await getSubjects();
+        let { students = [] } = await getStudents();
+        setStore({ students, subjects });
+      } catch (e) {
+        console.error("Error fetching students/subjects", e.message);
+        alert("Error requesting resource");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+  if (loading) return <Loading />;
+  let studentOpts = students.map(({ id, name, age, email }) => ({
+    key: id,
+    value: id,
+    title: `${name}/${age} yrs./${email}`
+  }));
+  let subjectOpts = subjects.map(({ id, credits, name, teacher }) => ({
+    key: id,
+    value: id,
+    title: `${name}(credits-${credits}) by ${teacher}`
   }));
   return (
     <Form
@@ -220,8 +254,8 @@ export function CreateRegistration(props) {
         );
       }}
     >
-      <Select options={options} name="student" label="Student Id" />
-      <Select options={options} name="subject" label="Subject Id" />
+      <Select options={studentOpts} name="student" label="Student Id" />
+      <Select options={subjectOpts} name="subject" label="Subject Id" />
     </Form>
   );
 }

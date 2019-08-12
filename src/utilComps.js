@@ -37,7 +37,7 @@ export const Select = React.forwardRef(function(
     </option>
   ));
   opts.unshift(
-    <option value="" selected={!value ? true : false}>
+    <option value="" selected={!value ? true : false} key="unset">
       Select to unset
     </option>
   );
@@ -56,12 +56,7 @@ export const Select = React.forwardRef(function(
   );
 });
 
-export function Form({
-  className = "",
-  children = [],
-  onSubmit,
-  submitLabel = "Ok"
-}) {
+export function Form({ children = [], onSubmit, submitLabel = "Ok" }) {
   let [fieldValues, setField] = useState(() =>
     children.map(({ props: { value = undefined, name = "" } }) => ({
       name,

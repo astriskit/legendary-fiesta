@@ -8,8 +8,8 @@ async function baseFetch(
   try {
     const api_key = "8Eb6a";
     const proxyProvider = ""; //"https://cors-anywhere.herokuapp.com/";
-    const base_url =
-      proxyProvider + "https://hamon-interviewapi.herokuapp.com/";
+    const base_url = "http://localhost:8080/";
+    // proxyProvider + "https://hamon-interviewapi.herokuapp.com/";
     resource = base_url + resource;
     resource += `?api_key=${api_key}`;
     if (data) {
@@ -85,8 +85,7 @@ export function getClassRoom(id) {
 }
 export function updateClassRoom(id, data) {
   return baseFetch(`classrooms/${id}`, {
-    method: "UPDATE",
-    data,
-    inUrl: false
+    method: "PUT",
+    data
   });
 }
