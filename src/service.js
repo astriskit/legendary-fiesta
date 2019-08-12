@@ -3,31 +3,25 @@
  */
 async function baseFetch(
   resource,
-  { method = "GET", data = null, ...rest } = {}
+  { method = "GET", data = null, inUrl = true, ...rest } = {}
 ) {
   try {
     const api_key = "8Eb6a";
-    const proxyProvider = "https://cors-anywhere.herokuapp.com/";
+    const proxyProvider = ""; //"https://cors-anywhere.herokuapp.com/";
     const base_url =
       proxyProvider + "https://hamon-interviewapi.herokuapp.com/";
     resource = base_url + resource;
     resource += `?api_key=${api_key}`;
-    if (method === "GET" && data) {
+    if (data) {
       let urlParams = "";
-      for (let key of data) {
+      for (let key in data) {
         urlParams += `&${key}=${data[key]}`;
       }
-      resource += encodeURI(urlParams);
-      data = null;
+      resource += urlParams;
     }
     let res = await fetch(resource, {
       method,
-      data,
       mode: "cors",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
       ...rest
     });
     if (!res.ok) {
@@ -90,5 +84,9 @@ export function getClassRoom(id) {
   return baseFetch(`classrooms/${id}`);
 }
 export function updateClassRoom(id, data) {
-  return baseFetch(`classrooms/${id}`, { method: "POST", data });
+  return baseFetch(`classrooms/${id}`, {
+    method: "UPDATE",
+    data,
+    inUrl: false
+  });
 }
