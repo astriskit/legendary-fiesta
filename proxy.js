@@ -1,6 +1,6 @@
 let app = require("express")();
 app.use(require("cors")());
-const DEBUG = true;
+const DEBUG = false;
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 const baseUrl = "https://hamon-interviewapi.herokuapp.com";
