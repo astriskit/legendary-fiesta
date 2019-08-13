@@ -101,14 +101,11 @@ export function Form({
     <div className="w3-container w3-border">
       <h4>{title}</h4>
       {userAlert && (
-        <div
-          className=" w3-panel w3-border"
-          style={{ display: "flex", flexDirection: "column" }}
-        >
+        <div className="w3-panel w3-border">
           <p>{userAlert}</p>
           <span
-            style={{ justifySelf: "right" }}
-            className="w3-btn w3-borderw3-border w3-blue"
+            style={{ marginBottom: "5px" }}
+            className="w3-btn w3-border w3-blue w3-small"
             onClick={() => {
               setAlert(undefined);
             }}
