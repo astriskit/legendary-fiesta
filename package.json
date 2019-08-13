@@ -15,7 +15,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "start-proxy": "nodemon proxy"
+    "proxy": "nodemon proxy"
   },
   "eslintConfig": {
     "extends": "react-app"

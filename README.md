@@ -4,7 +4,7 @@ This is a single page application to manage classrooms.
 
 ### Usage - The backend api [*https://hamon-interviewapi.herokuapp.com/*] is proxied locally.
 
-1. Please ensure that "curl" is install in your system locally.
+1. Please ensure that "curl" is installed in your system locally.
 2. Run `npm install`.
 3. Run `npm start` to run the dev-server.
 4. Run `npm run proxy` to run the proxy-server.
