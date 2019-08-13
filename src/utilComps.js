@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 
 export const Loading = () => (
   <div className="w3-panel w3-light-grey w3-center w3-wide">...loading...</div>
 );
+
 export const Error = ({ error }) => (
   <div className="w3-panel w3-red">{JSON.stringify(error)}</div>
 );
@@ -21,23 +22,22 @@ export function Input({ label, onChange, value = "", type = "", ...rest }) {
     </div>
   );
 }
-
-export const Select = React.forwardRef(function(
-  { label, onChange, value = "", options = [], className = "", ...restProps },
-  ref = null
-) {
+export function Select({
+  label,
+  onChange,
+  value = "",
+  options = [],
+  className = "",
+  ...restProps
+}) {
   //option:{key, value}
   let opts = options.map(({ key, value: optValue, title }) => (
-    <option
-      value={optValue}
-      key={key || optValue}
-      selected={value == optValue ? true : false}
-    >
+    <option value={optValue} key={key || optValue}>
       {title}
     </option>
   ));
   opts.unshift(
-    <option value="" selected={!value ? true : false} key="unset">
+    <option value="" key="unset">
       Select to unset
     </option>
   );
@@ -45,7 +45,7 @@ export const Select = React.forwardRef(function(
     <div className="w3-container">
       <label>{label}</label>
       <select
-        ref={ref}
+        value={value}
         onChange={onChange}
         {...restProps}
         className="w3-select"
@@ -54,9 +54,13 @@ export const Select = React.forwardRef(function(
       </select>
     </div>
   );
-});
-
-export function Form({ children = [], onSubmit, submitLabel = "Ok" }) {
+}
+export function Form({
+  children = [],
+  onSubmit,
+  submitLabel = "Ok",
+  title = "Form"
+}) {
   let [fieldValues, setField] = useState(() =>
     children.map(({ props: { value = undefined, name = "" } }) => ({
       name,
@@ -94,17 +98,23 @@ export function Form({ children = [], onSubmit, submitLabel = "Ok" }) {
     setField(newFieldValues);
   };
   return (
-    <div className="w3-container">
+    <div className="w3-container w3-border">
+      <h4>{title}</h4>
       {userAlert && (
-        <div className="w3-panel">
+        <div
+          className=" w3-panel w3-border"
+          style={{ display: "flex", flexDirection: "column" }}
+        >
           <p>{userAlert}</p>
-          <button
+          <span
+            style={{ justifySelf: "right" }}
+            className="w3-btn w3-borderw3-border w3-blue"
             onClick={() => {
               setAlert(undefined);
             }}
           >
             OK
-          </button>
+          </span>
         </div>
       )}
       {children.map((field, order) => {
@@ -129,39 +139,42 @@ export function Form({ children = [], onSubmit, submitLabel = "Ok" }) {
           />
         );
       })}
-      <button
-        className="w3-btn "
-        disabled={!dirty || submitting}
-        onClick={async () => {
-          try {
-            setSubmitting(true);
-            await onSubmit(fieldValues);
-            setAlert("Successfully saved.");
-          } catch (err) {
-            console.error(err);
-            setAlert(err.message || "Error submitting");
-          } finally {
-            setSubmitting(false);
-          }
-        }}
-      >
-        {submitLabel}
-      </button>
-      <button
-        className="w3-btn "
-        disabled={!dirty}
-        onClick={() => {
-          let initValues = children.map(
-            ({ props: { value = undefined, name = "" } }) => ({
-              name,
-              value
-            })
-          );
-          setField(initValues);
-        }}
-      >
-        Reset
-      </button>
+      <div className="w3-panel w3-center">
+        <button
+          className="w3-btn w3-border"
+          style={{ marginRight: "4px" }}
+          disabled={!dirty || submitting}
+          onClick={async () => {
+            try {
+              setSubmitting(true);
+              await onSubmit(fieldValues);
+              setAlert("Successfully saved.");
+            } catch (err) {
+              console.error(err);
+              setAlert(err.message || "Error submitting");
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          {submitLabel}
+        </button>
+        <button
+          className="w3-btn w3-border"
+          disabled={!dirty}
+          onClick={() => {
+            let initValues = children.map(
+              ({ props: { value = undefined, name = "" } }) => ({
+                name,
+                value
+              })
+            );
+            setField(initValues);
+          }}
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 }
@@ -240,7 +253,11 @@ export class Table extends React.Component {
                       >
                         {column.dataIndex
                           ? record[column.dataIndex]
-                          : column.render(record)}
+                          : column.render(
+                              record,
+                              this.state,
+                              this.setState.bind(this)
+                            )}
                       </td>
                     );
                   })}
@@ -252,4 +269,59 @@ export class Table extends React.Component {
       </div>
     );
   }
+}
+
+export function ShowRecord({
+  id,
+  service,
+  title,
+  responseFilter,
+  fields = []
+}) {
+  let [loading, setLoading] = useState(true);
+  let [record, setRecord] = useState({});
+  useEffect(() => {
+    if (service) {
+      (async () => {
+        try {
+          if (!responseFilter) throw new Error("responseFilter is undefined");
+          let res = await service(id);
+          res = responseFilter(res);
+          if (res.error) {
+            alert(res.error);
+          } else {
+            setRecord(res);
+          }
+        } catch (er) {
+          alert("Error in fetching record.");
+          console.error(er, "Error in fetching record.");
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }
+  }, [id, service, responseFilter]);
+  if (!service) {
+    return null;
+  }
+  if (loading) {
+    return <Loading />;
+  }
+  if (!record) {
+    return <div className="w3-panel w3-yellow">No data found!</div>;
+  }
+  return (
+    <div className="w3-container w3-responsive w3-card">
+      <h4 className="w3-panel">{title}</h4>
+      {fields.map(fld => {
+        let field = record[fld.dataIndex];
+        return (
+          <div className="w3-container w3-panel w3-light-grey" key={fld.key}>
+            <h5>{fld.title || fld.dataIndex.toUpperCase()}</h5>
+            <h6>{field}</h6>
+          </div>
+        );
+      })}
+    </div>
+  );
 }

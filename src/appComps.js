@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Form, Input, Select, Table, Loading } from "./utilComps";
+import { Form, Select, Table, Loading, ShowRecord } from "./utilComps";
 import {
   getStudents,
   getStudent,
   getRegistrations,
-  getRegistration,
   addRegistration,
   removeRegistration,
   getSubjects,
@@ -17,30 +16,59 @@ import {
 
 export function Navigation() {
   return (
-    <div className="w3-bar w3-light-grey w3-border">
-      <Link className="w3-bar-item w3-btn" to="/">
+    <div
+      className="w3-container w3-bar w3-light-grey w3-border"
+      style={{ marginTop: "5px", marginBottom: "5px" }}
+    >
+      <Link
+        className="w3-bar-item w3-btn"
+        style={{ marginRight: "5px" }}
+        to="/"
+      >
         Home
       </Link>
-      <Link className="w3-bar-item w3-btn" to="/students">
+      <Link
+        className="w3-bar-item w3-btn"
+        style={{ marginRight: "5px" }}
+        to="/students"
+      >
         Students
       </Link>
-      <Link className="w3-bar-item w3-btn" to="/registrations">
+      <Link
+        className="w3-bar-item w3-btn"
+        style={{ marginRight: "5px" }}
+        to="/registrations"
+      >
         Registrations
       </Link>
-      <Link className="w3-bar-item w3-btn" to="/registrations/create">
-        Create Registrations
-      </Link>
-      <Link className="w3-bar-item w3-btn" to="/subjects">
+      <Link
+        className="w3-bar-item w3-btn"
+        style={{ marginRight: "5px" }}
+        to="/subjects"
+      >
         Subjects
       </Link>
-      <Link className="w3-bar-item w3-btn" to="/classrooms">
-        Class room
+      <Link
+        className="w3-bar-item w3-btn"
+        style={{ marginRight: "5px" }}
+        to="/classrooms"
+      >
+        Classrooms
+      </Link>
+      <Link
+        className="w3-bar-item w3-btn"
+        style={{ marginRight: "5px" }}
+        to="/registrations/create"
+      >
+        Assign Subjects
       </Link>
     </div>
   );
 }
 export function Home(props) {
-  return "Home";
+  return (
+    <div className="w3-container">Hello there. I'm just a landing page.</div>
+  );
 }
 
 export function ListStudents(props) {
@@ -67,12 +95,11 @@ export function ListStudents(props) {
 }
 
 const SubjectSelect = ({
-  record: { id },
+  record: { id, subject },
   setClassrooms,
   classrooms,
   subjects
 }) => {
-  let selectRef = useRef(null);
   let [loading, setLoading] = useState(true);
   let [rec, setRec] = useState({});
   useEffect(() => {
@@ -87,40 +114,36 @@ const SubjectSelect = ({
         setLoading(false);
       }
     })();
-  });
-  useEffect(() => {
-    selectRef.current.value = rec.subject || null;
-  }, [rec]);
-  if (loading) return <Loading />;
+  }, [id]);
   return (
-    <Select
-      ref={selectRef}
-      value={rec.value}
-      disabled={loading}
-      options={subjects}
-      onChange={async ({ target: { value } }) => {
-        try {
-          setLoading(true);
-          await updateClassRoom(rec.id, { subject: value });
-          let newRecords = classrooms.map(classroom => {
-            if (rec.id === classroom.id) {
-              classroom.value = value;
-            }
-            return classroom;
-          });
-          setClassrooms(newRecords);
-        } catch (er) {
-          selectRef.current.value = rec.value;
-          console.error(er);
-          alert("Error while saving!");
-        } finally {
-          setLoading(false);
-        }
-      }}
-    />
+    <>
+      {loading && <Loading />}
+      <Select
+        value={subject || rec.subject}
+        options={subjects}
+        disabled={loading}
+        onChange={async ({ target: { value } }) => {
+          try {
+            setLoading(true);
+            await updateClassRoom(rec.id, { subject: value });
+            let newRecords = classrooms.map(classroom => {
+              if (rec.id === classroom.id) {
+                classroom.value = value;
+              }
+              return classroom;
+            });
+            setClassrooms(newRecords);
+          } catch (er) {
+            console.error(er);
+            alert("Error while saving!");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      />
+    </>
   );
 };
-
 export function ListClassRooms(props) {
   // {
   //   "id": 1,
@@ -177,7 +200,6 @@ export function ListClassRooms(props) {
     <Table data={classrooms} columns={columns} title="List of Classrooms" />
   );
 }
-
 export function ListRegistrations(props) {
   //   {
   //   "registration": {
@@ -186,17 +208,51 @@ export function ListRegistrations(props) {
   //     "subject": 3
   //   }
   // }
+  let [loading, setLoading] = useState(false);
   const columns = [
     { title: "Id", key: "id", dataIndex: "id" },
-    { title: "Student Id", key: "student", dataIndex: "student" },
-    { title: "Subject Id", key: "subject", dataIndex: "subject" },
+    {
+      title: "Student Id",
+      key: "student",
+      render: ({ student }) => (
+        <Link
+          className="w3-btn w3-border"
+          className="w3-btn"
+          to={`students/${student}`}
+        >
+          {student}
+        </Link>
+      )
+    },
+    {
+      title: "Subject Id",
+      key: "subject",
+      render: ({ subject }) => (
+        <Link
+          className="w3-btn w3-border"
+          className="w3-btn"
+          to={`subjects/${subject}`}
+        >
+          {subject}
+        </Link>
+      )
+    },
     {
       title: "Delete",
       key: "delete",
       render: rec => (
         <button
+          className="w3-btn w3-border"
           onClick={async () => {
-            await removeRegistration(rec.id);
+            try {
+              setLoading(true);
+              await removeRegistration(rec.id);
+            } catch (e) {
+              alert("Error in deleting!");
+              console.error("delete-error", e);
+            } finally {
+              setLoading(false);
+            }
           }}
         >
           Delete
@@ -204,6 +260,7 @@ export function ListRegistrations(props) {
       )
     }
   ];
+  if (loading) return <Loading />;
   return (
     <Table
       title="List of Registrations"
@@ -253,9 +310,10 @@ export function CreateRegistration(props) {
           Number(payload.subject)
         );
       }}
+      title="Assign subjects to students"
     >
-      <Select options={studentOpts} name="student" label="Student Id" />
-      <Select options={subjectOpts} name="subject" label="Subject Id" />
+      <Select options={studentOpts} name="student" label="Select Student" />
+      <Select options={subjectOpts} name="subject" label="Select Subject" />
     </Form>
   );
 }
@@ -278,6 +336,51 @@ export function ListSubjects(props) {
       service={getSubjects}
       columns={columns}
       responseFilter={data => data.subjects}
+    />
+  );
+}
+export function ListSubject({
+  match: {
+    params: { id = "" }
+  }
+}) {
+  if (!id) return <div className="w3-panel w3-yellow">Id is missing!</div>;
+  const columns = [
+    { title: "Id", key: "id", dataIndex: "id" },
+    { title: "Name", key: "name", dataIndex: "name" },
+    { title: "Credits", key: "credits", dataIndex: "credits" },
+    { title: "Teacher", key: "teacher", dataIndex: "teacher" }
+  ];
+  return (
+    <ShowRecord
+      id={id}
+      service={getSubject}
+      title="Subject info"
+      responseFilter={res => res.subject}
+      fields={columns}
+    />
+  );
+}
+
+export function ListStudent({
+  match: {
+    params: { id = "" }
+  }
+}) {
+  if (!id) return <div className="w3-panel w3-yellow">Id is missing!</div>;
+  const columns = [
+    { title: "Id", key: "id", dataIndex: "id" },
+    { title: "Name", key: "name", dataIndex: "name" },
+    { title: "Age", key: "age", dataIndex: "age" },
+    { title: "Email", key: "email", dataIndex: "email" }
+  ];
+  return (
+    <ShowRecord
+      id={id}
+      service={getStudent}
+      title="Student info"
+      responseFilter={res => res.student}
+      fields={columns}
     />
   );
 }
