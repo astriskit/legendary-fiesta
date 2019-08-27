@@ -272,7 +272,7 @@ export function ShowRecord({
   id,
   service,
   title,
-  responseFilter,
+  responseFilter = res => res,
   fields = []
 }) {
   let [loading, setLoading] = useState(true);
@@ -281,7 +281,6 @@ export function ShowRecord({
     if (service) {
       (async () => {
         try {
-          if (!responseFilter) throw new Error("responseFilter is undefined");
           let res = await service(id);
           res = responseFilter(res);
           if (res.error) {
@@ -297,7 +296,7 @@ export function ShowRecord({
         }
       })();
     }
-  }, [id, service, responseFilter]);
+  }, []);
   if (!service) {
     return null;
   }

@@ -356,7 +356,6 @@ export function ListSubject({
       id={id}
       service={getSubject}
       title="Subject info"
-      responseFilter={res => res.subject}
       fields={columns}
     />
   );
@@ -379,7 +378,6 @@ export function ListStudent({
       id={id}
       service={getStudent}
       title="Student info"
-      responseFilter={res => res.student}
       fields={columns}
     />
   );
