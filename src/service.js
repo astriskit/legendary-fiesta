@@ -7,7 +7,7 @@ async function baseFetch(
 ) {
   try {
     const api_key = "8Eb6a";
-    const base_url = "http://localhost:8080/";
+    const base_url = "https://hamon-interviewapi.herokuapp.com/";
     resource = base_url + resource;
     resource += `?api_key=${api_key}`;
     if (data) {
