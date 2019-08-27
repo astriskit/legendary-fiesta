@@ -1,6 +1,14 @@
 /**
  * Contains all the network services for connecting with api
  */
+export function createFormData(data) {
+  let fdata = new FormData();
+  for (let key in data) {
+    fdata.append(key, data[key]);
+  }
+  return fdata;
+}
+
 async function baseFetch(
   resource,
   { method = "GET", data = null, inUrl = true, ...rest } = {}
@@ -10,16 +18,18 @@ async function baseFetch(
     const base_url = "https://hamon-interviewapi.herokuapp.com/";
     resource = base_url + resource;
     resource += `?api_key=${api_key}`;
-    if (data) {
+    if (data && inUrl) {
       let urlParams = "";
       for (let key in data) {
         urlParams += `&${key}=${data[key]}`;
       }
       resource += urlParams;
+      data = null;
     }
     let res = await fetch(resource, {
       method,
       mode: "cors",
+      ...(data ? { body: data } : {}),
       ...rest
     });
     if (!res.ok) {
@@ -55,7 +65,8 @@ export function getRegistration(id) {
 export function addRegistration(studentId, subjectId) {
   return baseFetch("registration", {
     method: "POST",
-    data: { student: studentId, subject: subjectId }
+    inUrl: false,
+    data: createFormData({ student: studentId, subject: subjectId })
   });
 }
 export function removeRegistration(id) {
@@ -83,7 +94,8 @@ export function getClassRoom(id) {
 }
 export function updateClassRoom(id, data) {
   return baseFetch(`classrooms/${id}`, {
-    method: "PUT",
-    data
+    method: "PATCH",
+    data: createFormData(data),
+    inUrl: false
   });
 }
