@@ -147,8 +147,8 @@ export function Form({
               await onSubmit(fieldValues);
               setAlert("Successfully saved.");
             } catch (err) {
-              console.error(err);
-              setAlert(err.message || "Error submitting");
+              console.error("error while submitting - ", err);
+              setAlert("Couldn't complete the operation.");
             } finally {
               setSubmitting(false);
             }
