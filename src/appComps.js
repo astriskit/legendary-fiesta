@@ -82,7 +82,14 @@ export function ListStudents(props) {
     { title: "Id", key: "id", dataIndex: "id" },
     { title: "Name", key: "name", dataIndex: "name" },
     { title: "Age", key: "age", dataIndex: "age" },
-    { title: "Email", key: "email", dataIndex: "email" }
+    { title: "Email", key: "email", dataIndex: "email" },
+    {
+      title: "Subject",
+      key: "assign-subject",
+      render: record => (
+        <Link to={`registrations/create?studentId=${record.id}`}>Assign</Link>
+      )
+    }
   ];
   return (
     <Table
@@ -199,11 +206,7 @@ export function ListRegistrations(props) {
       title: "Student Id",
       key: "student",
       render: ({ student }) => (
-        <Link
-          className="w3-btn w3-border"
-          className="w3-btn"
-          to={`students/${student}`}
-        >
+        <Link className="w3-btn w3-border" to={`students/${student}`}>
           {student}
         </Link>
       )
@@ -212,11 +215,7 @@ export function ListRegistrations(props) {
       title: "Subject Id",
       key: "subject",
       render: ({ subject }) => (
-        <Link
-          className="w3-btn w3-border"
-          className="w3-btn"
-          to={`subjects/${subject}`}
-        >
+        <Link className="w3-btn w3-border" to={`subjects/${subject}`}>
           {subject}
         </Link>
       )
@@ -271,16 +270,33 @@ export function CreateRegistration(props) {
       }
     })();
   }, []);
+  let {
+    location: { search = "" }
+  } = props;
+  let qStudent = "";
+  let qSubject = "";
+  if (search) {
+    let a = search.split("?");
+    let b = a.length === 1 ? a[0] : a[1];
+    let query = {};
+    b.split("&")
+      .map(c => c.split("="))
+      .forEach(([key, value]) => {
+        query[key] = value;
+      });
+    qStudent = query.studentId || "";
+    qSubject = query.subjectId || "";
+  }
   if (loading) return <Loading />;
   let studentOpts = students.map(({ id, name, age, email }) => ({
     key: id,
     value: id,
-    title: `${name}/${age} yrs./${email}`
+    title: `${name} | ${age} yrs. | ${email}`
   }));
   let subjectOpts = subjects.map(({ id, credits, name, teacher }) => ({
     key: id,
     value: id,
-    title: `${name}(credits-${credits}) by ${teacher}`
+    title: `${name} (credits: ${credits}) by ${teacher}`
   }));
   return (
     <Form
@@ -289,15 +305,30 @@ export function CreateRegistration(props) {
         values.forEach(({ name, value }) => {
           payload[name] = value;
         });
-        return addRegistration(
-          Number(payload.student),
-          Number(payload.subject)
-        );
+        let studentId = qStudent || Number(payload.student);
+        let subjectId = qSubject || Number(payload.subject);
+        if (!studentId || !subjectId)
+          throw new Error("Student or subject not selected!");
+        return addRegistration(studentId, subjectId);
       }}
       title="Assign subjects to students"
     >
-      <Select options={studentOpts} name="student" label="Select Student" />
-      <Select options={subjectOpts} name="subject" label="Select Subject" />
+      <Select
+        disabled={qStudent ? true : false}
+        value={qStudent || ""}
+        options={studentOpts}
+        name="student"
+        label="Select Student"
+        size={10}
+      />
+      <Select
+        disabled={qSubject ? true : false}
+        value={qSubject || ""}
+        options={subjectOpts}
+        name="subject"
+        label="Select Subject"
+        size={5}
+      />
     </Form>
   );
 }
@@ -312,7 +343,14 @@ export function ListSubjects(props) {
     { title: "Id", key: "id", dataIndex: "id" },
     { title: "Name", key: "name", dataIndex: "name" },
     { title: "Credits", key: "credits", dataIndex: "credits" },
-    { title: "Teacher", key: "teacher", dataIndex: "teacher" }
+    { title: "Teacher", key: "teacher", dataIndex: "teacher" },
+    {
+      title: "Students",
+      key: "assign-student",
+      render: record => (
+        <Link to={`registrations/create?subjectId=${record.id}`}>Assign</Link>
+      )
+    }
   ];
   return (
     <Table
