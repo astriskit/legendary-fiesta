@@ -1,5 +1,22 @@
 import React, { useEffect, useState } from "react";
 
+function searchInChildren(node, searchStr) {
+  if (Array.isArray(node)) {
+    return node.some(c => searchInChildren(c, searchStr));
+  } else if (node["props"]) {
+    if (node.props.children) {
+      return searchInChildren(node.props.children, searchStr);
+    } else {
+      return false;
+    }
+  } else {
+    return node
+      .toString()
+      .toLowerCase()
+      .includes(searchStr.toLowerCase());
+  }
+}
+
 export const Loading = () => (
   <div className="w3-panel w3-light-grey w3-center w3-wide">...loading...</div>
 );
@@ -183,7 +200,8 @@ export class Table extends React.Component {
       data: props.data || [],
       loading: props.loading || false,
       error: null,
-      columns: props.columns
+      columns: props.columns,
+      searchStr: ""
     };
   }
 
@@ -230,7 +248,15 @@ export class Table extends React.Component {
     }
     return (
       <div className="w3-responsive w3-card-4">
-        <h4 className="w3-panel">{this.props.title}</h4>
+        <h3 className="w3-panel">{this.props.title}</h3>
+        <Input
+          label="Search items"
+          onChange={({ target: { value: searchStr } }) =>
+            this.setState({ searchStr })
+          }
+          value={this.state.searchStr}
+        />
+        <hr />
         <table className="w3-table-all">
           <thead>
             <tr>
@@ -240,24 +266,34 @@ export class Table extends React.Component {
             </tr>
           </thead>
           <tbody>
-            {this.state.data.map((record, index) => {
-              return (
-                <tr key={this.props.rowKey ? this.props.rowKey(record) : index}>
-                  {this.state.columns.map((column, index) => {
-                    return (
-                      <td
-                        key={column.key || index}
-                        className={column.className ? column.className : ""}
-                      >
-                        {column.dataIndex
-                          ? record[column.dataIndex]
-                          : column.render(record)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
+            {this.state.data
+              .map((record, index) => {
+                return (
+                  <tr
+                    key={this.props.rowKey ? this.props.rowKey(record) : index}
+                  >
+                    {this.state.columns.map((column, index) => {
+                      return (
+                        <td
+                          key={column.key || index}
+                          className={column.className ? column.className : ""}
+                        >
+                          {column.dataIndex
+                            ? record[column.dataIndex]
+                            : column.render(record)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+              .filter(rowEl => {
+                if (this.state.searchStr) {
+                  return searchInChildren(rowEl, this.state.searchStr);
+                } else {
+                  return true;
+                }
+              })}
           </tbody>
         </table>
       </div>

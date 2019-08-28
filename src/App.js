@@ -16,7 +16,7 @@ import {
 function App() {
   return (
     <HashRouter>
-      <div className="w3-container">
+      <div className="w3-container" style={{ minHeight: "100vh" }}>
         <Navigation />
         <Switch>
           <Route exact path="/students" component={ListStudents} />
