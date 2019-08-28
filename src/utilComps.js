@@ -179,11 +179,11 @@ export function Form({
 export class Table extends React.Component {
   constructor(props) {
     super(props);
-    this.columns = props.columns;
     this.state = {
       data: props.data || [],
       loading: props.loading || false,
-      error: null
+      error: null,
+      columns: props.columns
     };
   }
 
@@ -210,11 +210,8 @@ export class Table extends React.Component {
     console.error("Error:", err);
   }
 
-  componentWillReceiveProps(props) {
-    if (props.data) {
-      this.setState({ data: props.data });
-    }
-    this.columns = props.columns;
+  componentWillReceiveProps({ data, columns, loading }) {
+    this.setState({ data, columns, loading });
   }
 
   render() {
@@ -233,7 +230,7 @@ export class Table extends React.Component {
         <table className="w3-table-all">
           <thead>
             <tr>
-              {this.columns.map((column, index) => {
+              {this.state.columns.map((column, index) => {
                 return <th key={index}>{column.title || ""}</th>;
               })}
             </tr>
@@ -242,7 +239,7 @@ export class Table extends React.Component {
             {this.state.data.map((record, index) => {
               return (
                 <tr key={this.props.rowKey ? this.props.rowKey(record) : index}>
-                  {this.columns.map((column, index) => {
+                  {this.state.columns.map((column, index) => {
                     return (
                       <td
                         key={column.key || index}
@@ -250,11 +247,7 @@ export class Table extends React.Component {
                       >
                         {column.dataIndex
                           ? record[column.dataIndex]
-                          : column.render(
-                              record,
-                              this.state,
-                              this.setState.bind(this)
-                            )}
+                          : column.render(record)}
                       </td>
                     );
                   })}
