@@ -94,56 +94,6 @@ export function ListStudents(props) {
   );
 }
 
-const SubjectSelect = ({
-  record: { id, subject },
-  setClassrooms,
-  classrooms,
-  subjects
-}) => {
-  let [loading, setLoading] = useState(true);
-  let [rec, setRec] = useState({});
-  useEffect(() => {
-    (async () => {
-      try {
-        let classroom = await getClassRoom(id);
-        setRec(classroom);
-      } catch (e) {
-        alert("Error fetching classroom info");
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [id]);
-  return (
-    <>
-      {loading && <Loading />}
-      <Select
-        value={subject || rec.subject}
-        options={subjects}
-        disabled={loading}
-        onChange={async ({ target: { value } }) => {
-          try {
-            setLoading(true);
-            await updateClassRoom(rec.id, { subject: value });
-            let newRecords = classrooms.map(classroom => {
-              if (rec.id === classroom.id) {
-                classroom.value = value;
-              }
-              return classroom;
-            });
-            setClassrooms(newRecords);
-          } catch (er) {
-            console.error(er);
-            alert("Error while saving!");
-          } finally {
-            setLoading(false);
-          }
-        }}
-      />
-    </>
-  );
-};
 export function ListClassRooms(props) {
   // {
   //   "id": 1,
@@ -166,6 +116,16 @@ export function ListClassRooms(props) {
           value: id,
           title: `${name} by ${teacher} (Credits: ${credits})`
         }));
+        let _classrooms = await Promise.all(
+          classrooms.map(({ id }) => getClassRoom(id))
+        );
+        classrooms = classrooms.map(c => {
+          let _c = _classrooms.find(({ id }) => id === c.id);
+          if (_c) {
+            c = { ...c, ..._c };
+          }
+          return c;
+        });
         setSubjects(opts);
         setClassrooms(classrooms);
       } catch (er) {
@@ -177,6 +137,25 @@ export function ListClassRooms(props) {
     })();
   }, []);
 
+  const onSubjectSelect = async ({ target: { value } }, id) => {
+    try {
+      setLoading(true);
+      await updateClassRoom(id, { subject: value });
+      let newRecords = classrooms.map(classroom => {
+        if (id === classroom.id) {
+          classroom.subject = value;
+        }
+        return classroom;
+      });
+      setClassrooms(newRecords);
+    } catch (er) {
+      console.error(er);
+      alert("Error while saving!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
     { title: "Id", key: "id", dataIndex: "id" },
     { title: "Name", key: "name", dataIndex: "name" },
@@ -185,19 +164,24 @@ export function ListClassRooms(props) {
     {
       title: "Subject",
       key: "subject",
-      render: record => (
-        <SubjectSelect
-          record={record}
-          setClassrooms={setClassrooms}
-          classrooms={classrooms}
-          subjects={subjects}
-        />
-      )
+      render: record => {
+        return (
+          <Select
+            value={record.subject || ""}
+            options={subjects}
+            onChange={ev => onSubjectSelect(ev, record.id)}
+          />
+        );
+      }
     }
   ];
-  if (loading) return <Loading />;
   return (
-    <Table data={classrooms} columns={columns} title="List of Classrooms" />
+    <Table
+      data={classrooms}
+      columns={columns}
+      title="List of Classrooms"
+      loading={loading}
+    />
   );
 }
 export function ListRegistrations(props) {
@@ -260,9 +244,9 @@ export function ListRegistrations(props) {
       )
     }
   ];
-  if (loading) return <Loading />;
   return (
     <Table
+      loading={loading}
       title="List of Registrations"
       service={getRegistrations}
       columns={columns}
@@ -360,7 +344,6 @@ export function ListSubject({
     />
   );
 }
-
 export function ListStudent({
   match: {
     params: { id = "" }
