@@ -210,8 +210,12 @@ export class Table extends React.Component {
     console.error("Error:", err);
   }
 
-  componentWillReceiveProps({ data, columns, loading }) {
-    this.setState({ data, columns, loading });
+  componentWillReceiveProps({ data = [], columns = [], loading = false }) {
+    let state = { columns, loading };
+    if (!this.props.service && data) {
+      state.data = data;
+    }
+    this.setState(state);
   }
 
   render() {

@@ -137,7 +137,7 @@ export function ListClassRooms(props) {
         setClassrooms(classrooms);
       } catch (er) {
         console.error(er);
-        alert("Error fetching subjects/classrooms!");
+        alert("Error fetching subjects/classrooms.");
       } finally {
         setLoading(false);
       }
@@ -157,7 +157,7 @@ export function ListClassRooms(props) {
       setClassrooms(newRecords);
     } catch (er) {
       console.error(er);
-      alert("Error while saving!");
+      alert("Error while saving.");
     } finally {
       setLoading(false);
     }
@@ -200,6 +200,21 @@ export function ListRegistrations(props) {
   //   }
   // }
   let [loading, setLoading] = useState(false);
+  let [registrations, setRegistrations] = useState([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        let { registrations: data } = await getRegistrations();
+        setRegistrations(data);
+      } catch (err) {
+        console.error("error while fetching registrations", err);
+        setRegistrations([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
   const columns = [
     { title: "Id", key: "id", dataIndex: "id" },
     {
@@ -230,8 +245,11 @@ export function ListRegistrations(props) {
             try {
               setLoading(true);
               await removeRegistration(rec.id);
+              let regs = registrations.filter(r => r.id !== rec.id);
+              setRegistrations(regs);
+              alert("Deleted.");
             } catch (e) {
-              alert("Error in deleting!");
+              alert("Error in deleting.");
               console.error("delete-error", e);
             } finally {
               setLoading(false);
@@ -247,9 +265,8 @@ export function ListRegistrations(props) {
     <Table
       loading={loading}
       title="List of Registrations"
-      service={getRegistrations}
+      data={registrations}
       columns={columns}
-      responseFilter={data => data.registrations}
     />
   );
 }
@@ -308,7 +325,7 @@ export function CreateRegistration(props) {
         let studentId = qStudent || Number(payload.student);
         let subjectId = qSubject || Number(payload.subject);
         if (!studentId || !subjectId)
-          throw new Error("Student or subject not selected!");
+          throw new Error("Student or subject not selected.");
         return addRegistration(studentId, subjectId);
       }}
       title="Assign subjects to students"
@@ -366,7 +383,7 @@ export function ListSubject({
     params: { id = "" }
   }
 }) {
-  if (!id) return <div className="w3-panel w3-yellow">Id is missing!</div>;
+  if (!id) return <div className="w3-panel w3-yellow">Id is missing.</div>;
   const columns = [
     { title: "Id", key: "id", dataIndex: "id" },
     { title: "Name", key: "name", dataIndex: "name" },
@@ -387,7 +404,7 @@ export function ListStudent({
     params: { id = "" }
   }
 }) {
-  if (!id) return <div className="w3-panel w3-yellow">Id is missing!</div>;
+  if (!id) return <div className="w3-panel w3-yellow">Id is missing.</div>;
   const columns = [
     { title: "Id", key: "id", dataIndex: "id" },
     { title: "Name", key: "name", dataIndex: "name" },
