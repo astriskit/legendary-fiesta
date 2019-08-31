@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Form, Select, Table, Loading, ShowRecord } from "./utilComps";
+import {
+  Form,
+  Select,
+  Table,
+  Loading,
+  ShowRecord,
+  Highlight
+} from "./utilComps";
 import {
   getStudents,
   getStudent,
@@ -17,46 +24,52 @@ import {
 export function Navigation() {
   return (
     <div
-      className="w3-container w3-bar w3-blue w3-border"
-      style={{ marginTop: "5px", marginBottom: "5px" }}
+      className="w3-container w3-bar w3-white w3-border w3-large"
+      style={{
+        marginTop: "5px",
+        marginBottom: "5px",
+        maxHeight: "38px",
+        display: "flex",
+        justifyContent: "center"
+      }}
     >
       <Link
-        className="w3-bar-item w3-btn"
+        className="w3-bar-item w3-btn w3-hover-text-white w3-hover-teal"
         style={{ marginRight: "5px" }}
         to="/"
       >
         Home
       </Link>
       <Link
-        className="w3-bar-item w3-btn"
+        className="w3-bar-item w3-btn w3-hover-text-white w3-hover-teal"
         style={{ marginRight: "5px" }}
         to="/students"
       >
         Students
       </Link>
       <Link
-        className="w3-bar-item w3-btn"
+        className="w3-bar-item w3-btn w3-hover-text-white w3-hover-teal"
         style={{ marginRight: "5px" }}
         to="/registrations"
       >
         Registrations
       </Link>
       <Link
-        className="w3-bar-item w3-btn"
+        className="w3-bar-item w3-btn w3-hover-text-white w3-hover-teal"
         style={{ marginRight: "5px" }}
         to="/subjects"
       >
         Subjects
       </Link>
       <Link
-        className="w3-bar-item w3-btn"
+        className="w3-bar-item w3-btn w3-hover-text-white w3-hover-teal"
         style={{ marginRight: "5px" }}
         to="/classrooms"
       >
         Classrooms
       </Link>
       <Link
-        className="w3-bar-item w3-btn"
+        className="w3-bar-item w3-btn w3-hover-text-white w3-hover-teal"
         style={{ marginRight: "5px" }}
         to="/registrations/create"
       >
@@ -70,7 +83,6 @@ export function Home(props) {
     <div className="w3-container">Hello there. I'm just a landing page.</div>
   );
 }
-
 export function ListStudents(props) {
   // {
   //   "age": 29,
@@ -86,8 +98,13 @@ export function ListStudents(props) {
     {
       title: "Subject",
       key: "assign-subject",
-      render: record => (
-        <Link to={`registrations/create?studentId=${record.id}`}>Assign</Link>
+      render: (record, _, searchStr) => (
+        <Link
+          className="w3-btn w3-border w3-round w3-border-teal w3-hover-text-white w3-hover-teal"
+          to={`registrations/create?studentId=${record.id}`}
+        >
+          Assign
+        </Link>
       )
     }
   ];
@@ -100,7 +117,6 @@ export function ListStudents(props) {
     />
   );
 }
-
 export function ListClassRooms(props) {
   // {
   //   "id": 1,
@@ -171,7 +187,7 @@ export function ListClassRooms(props) {
     {
       title: "Subject",
       key: "subject",
-      render: record => {
+      render: (record, _, searchStr) => {
         return (
           <Select
             value={record.subject || ""}
@@ -220,18 +236,24 @@ export function ListRegistrations(props) {
     {
       title: "Student Id",
       key: "student",
-      render: ({ student }) => (
-        <Link className="w3-btn w3-border" to={`students/${student}`}>
-          {student}
+      render: ({ student }, _, searchStr) => (
+        <Link
+          className="w3-btn w3-border w3-round w3-border-teal w3-hover-text-white w3-hover-teal"
+          to={`students/${student}`}
+        >
+          <Highlight match={searchStr}>{student}</Highlight>
         </Link>
       )
     },
     {
       title: "Subject Id",
       key: "subject",
-      render: ({ subject }) => (
-        <Link className="w3-btn w3-border" to={`subjects/${subject}`}>
-          {subject}
+      render: ({ subject }, _, searchStr) => (
+        <Link
+          className="w3-btn w3-border w3-round w3-border-teal w3-hover-text-white w3-hover-teal"
+          to={`subjects/${subject}`}
+        >
+          <Highlight match={searchStr}>{subject}</Highlight>
         </Link>
       )
     },
@@ -240,7 +262,7 @@ export function ListRegistrations(props) {
       key: "delete",
       render: rec => (
         <button
-          className="w3-btn w3-border"
+          className="w3-btn w3-border w3-round w3-pale-red w3-text-red w3-hover-red w3-hover-text-white"
           onClick={async () => {
             try {
               setLoading(true);
@@ -365,7 +387,12 @@ export function ListSubjects(props) {
       title: "Students",
       key: "assign-student",
       render: record => (
-        <Link to={`registrations/create?subjectId=${record.id}`}>Assign</Link>
+        <Link
+          to={`registrations/create?subjectId=${record.id}`}
+          className="w3-btn w3-border w3-round w3-border-teal w3-hover-text-white w3-hover-teal"
+        >
+          Assign
+        </Link>
       )
     }
   ];

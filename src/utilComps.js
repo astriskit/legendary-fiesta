@@ -18,14 +18,21 @@ function searchInChildren(node, searchStr) {
 }
 
 export const Loading = () => (
-  <div className="w3-panel w3-light-grey w3-center w3-wide">...loading...</div>
+  <div className="w3-panel w3-center w3-wide w3-xxlarge">...loading...</div>
 );
 
 export const Error = ({ error }) => (
   <div className="w3-panel w3-red">{JSON.stringify(error)}</div>
 );
 
-export function Input({ label, onChange, value = "", type = "", ...rest }) {
+export function Input({
+  className,
+  label,
+  onChange,
+  value = "",
+  type = "",
+  ...rest
+}) {
   return (
     <div className="w3-container">
       <label>{label}</label>
@@ -34,7 +41,7 @@ export function Input({ label, onChange, value = "", type = "", ...rest }) {
         onChange={onChange}
         value={value}
         {...rest}
-        className="w3-input"
+        className={"w3-input " + className}
       />
     </div>
   );
@@ -65,7 +72,7 @@ export function Select({
         value={value}
         onChange={onChange}
         {...restProps}
-        className="w3-select"
+        className="w3-select w3-border"
       >
         {opts}
       </select>
@@ -75,7 +82,7 @@ export function Select({
 export function Form({
   children = [],
   onSubmit,
-  submitLabel = "Ok",
+  submitLabel = "OK",
   title = "Form"
 }) {
   let [fieldValues, setField] = useState(() =>
@@ -116,20 +123,29 @@ export function Form({
   };
   return (
     <div className="w3-container w3-border">
-      <h4>{title}</h4>
+      <div
+        style={{ fontWeight: "bold", textAlign: "center", paddingTop: "5px" }}
+        className="w3-xlarge"
+      >
+        {title}
+      </div>
+      <hr style={{ marginTop: 0 }} />
       {userAlert && (
-        <div className="w3-panel w3-border">
-          <p>{userAlert}</p>
-          <span
-            style={{ marginBottom: "5px" }}
-            className="w3-btn w3-border w3-blue w3-small"
-            onClick={() => {
-              setAlert(undefined);
-            }}
-          >
-            OK
-          </span>
-        </div>
+        <>
+          <div className="w3-panel w3-border">
+            <p>{userAlert}</p>
+            <span
+              style={{ marginBottom: "5px" }}
+              className="w3-btn w3-border w3-blue w3-small"
+              onClick={() => {
+                setAlert(undefined);
+              }}
+            >
+              OK
+            </span>
+          </div>
+          <hr />
+        </>
       )}
       {children.map((field, order) => {
         let {
@@ -155,7 +171,7 @@ export function Form({
       })}
       <div className="w3-panel w3-center">
         <button
-          className="w3-btn w3-border"
+          className="w3-btn w3-border w3-small w3-round w3-text-white w3-blue w3-hover-teal"
           style={{ marginRight: "4px" }}
           disabled={!dirty || submitting}
           onClick={async () => {
@@ -174,7 +190,7 @@ export function Form({
           {submitLabel}
         </button>
         <button
-          className="w3-btn w3-border"
+          className="w3-btn w3-border w3-small w3-text-white w3-blue w3-hover-teal"
           disabled={!dirty}
           onClick={() => {
             let initValues = children.map(
@@ -192,6 +208,45 @@ export function Form({
     </div>
   );
 }
+
+export const Highlight = ({
+  match,
+  children,
+  highClass = "w3-text-deep-orange w3-yellow"
+}) => {
+  if (typeof children === "number") {
+    children = String(children);
+  }
+  if (
+    match &&
+    typeof children !== "object" &&
+    children
+      .toString()
+      .toLowerCase()
+      .includes(match.toLowerCase())
+  ) {
+    let target = children.toLowerCase();
+    let matcher = match.toLowerCase();
+    let parts = target.split(matcher).map(p => p.length);
+    let partsEl = [];
+    let pointer = 0;
+    parts.forEach((part, ind) => {
+      let ch1 = children.substr(pointer, pointer + part);
+      let ch2 = children.substr(pointer + part, match.length);
+      let el = <span key={ind}>{ch1}</span>;
+      let hel = (
+        <span key={`high-${ind}`} className={highClass}>
+          {ch2}
+        </span>
+      );
+      pointer += part + match.length;
+      partsEl.push(el);
+      partsEl.push(hel);
+    });
+    return partsEl;
+  }
+  return children;
+};
 
 export class Table extends React.Component {
   constructor(props) {
@@ -248,8 +303,15 @@ export class Table extends React.Component {
     }
     return (
       <div className="w3-responsive w3-card-4">
-        <h3 className="w3-panel">{this.props.title}</h3>
+        <div
+          style={{ fontWeight: "bold", textAlign: "center", paddingTop: "3px" }}
+          className="w3-xlarge"
+        >
+          {this.props.title}
+        </div>
         <Input
+          className="w3-text-teal w3-pale-blue"
+          style={{ fontWeight: "bold" }}
           label="Search items"
           onChange={({ target: { value: searchStr } }) =>
             this.setState({ searchStr })
@@ -257,7 +319,7 @@ export class Table extends React.Component {
           value={this.state.searchStr}
         />
         <hr />
-        <table className="w3-table-all">
+        <table className="w3-table-all w3-centered w3-hoverable w3-text-teal">
           <thead>
             <tr>
               {this.state.columns.map((column, index) => {
@@ -271,6 +333,7 @@ export class Table extends React.Component {
                 return (
                   <tr
                     key={this.props.rowKey ? this.props.rowKey(record) : index}
+                    className="w3-hover-pale-blue"
                   >
                     {this.state.columns.map((column, index) => {
                       return (
@@ -278,9 +341,13 @@ export class Table extends React.Component {
                           key={column.key || index}
                           className={column.className ? column.className : ""}
                         >
-                          {column.dataIndex
-                            ? record[column.dataIndex]
-                            : column.render(record)}
+                          {column.dataIndex ? (
+                            <Highlight match={this.state.searchStr}>
+                              {record[column.dataIndex]}
+                            </Highlight>
+                          ) : (
+                            column.render(record, index, this.state.searchStr)
+                          )}
                         </td>
                       );
                     })}
