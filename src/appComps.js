@@ -24,7 +24,7 @@ import {
 export function Navigation() {
   return (
     <div
-      className="w3-container w3-bar w3-white w3-border w3-large"
+      className="w3-container w3-bar w3-white w3-border"
       style={{
         marginTop: "5px",
         marginBottom: "5px",
